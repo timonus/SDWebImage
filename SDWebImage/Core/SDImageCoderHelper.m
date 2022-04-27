@@ -329,7 +329,18 @@ static const CGFloat kDestSeemOverlap = 2.0f;   // the numbers of pixels to over
     if (![self shouldDecodeImage:image]) {
         return image;
     }
-    
+    UIImage *decodedImage;
+    if (@available(iOS 15.0, *)) {
+        decodedImage = [image imageByPreparingForDisplay];
+    } else {
+        decodedImage = [self legacyDecodedImageWithImage:image];
+    }
+    SDImageCopyAssociatedObject(image, decodedImage);
+    decodedImage.sd_isDecoded = YES;
+    return decodedImage;
+}
+
++ (UIImage *)legacyDecodedImageWithImage:(UIImage *)image {
     CGImageRef imageRef = image.CGImage;
     if (!imageRef) {
         return image;
@@ -343,10 +354,8 @@ static const CGFloat kDestSeemOverlap = 2.0f;   // the numbers of pixels to over
     CGSize imageSize = image.size;
     SDGraphicsImageRenderer *renderer = [[SDGraphicsImageRenderer alloc] initWithSize:imageSize format:format];
     UIImage *decodedImage = [renderer imageWithActions:^(CGContextRef  _Nonnull context) {
-            [image drawInRect:CGRectMake(0, 0, imageSize.width, imageSize.height)];
+        [image drawInRect:CGRectMake(0, 0, imageSize.width, imageSize.height)];
     }];
-    SDImageCopyAssociatedObject(image, decodedImage);
-    decodedImage.sd_isDecoded = YES;
     return decodedImage;
 }
 
