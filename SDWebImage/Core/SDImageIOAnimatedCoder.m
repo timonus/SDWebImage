@@ -272,6 +272,9 @@ static NSString * kSDCGImageDestinationRequestedFileSize = @"kCGImageDestination
     UIImage *image = [[UIImage alloc] initWithCGImage:imageRef scale:scale orientation:exifOrientation];
 #endif
     CGImageRelease(imageRef);
+    if (!createFullImage) {
+        image.sd_isDecoded = YES;
+    }
     return image;
 }
 
