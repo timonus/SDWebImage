@@ -130,7 +130,7 @@ static id<SDImageLoader> _defaultImageLoader;
     }
     
     // Thumbnail Key Appending
-    NSValue *thumbnailSizeValue = context[SDWebImageContextImageThumbnailPixelSize];
+    NSValue *thumbnailSizeValue = context[SDWebImageContextImageThumbnailPixelSize]; // heyo
     if (thumbnailSizeValue != nil) {
         CGSize thumbnailSize = CGSizeZero;
 #if SD_MAC

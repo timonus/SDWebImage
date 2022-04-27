@@ -330,6 +330,7 @@ static const CGFloat kDestSeemOverlap = 2.0f;   // the numbers of pixels to over
         return image;
     }
     UIImage *decodedImage;
+    NSLog(@"DECODE 2");
     if (@available(iOS 15.0, *)) {
         decodedImage = [image imageByPreparingForDisplay];
     } else {
@@ -363,10 +364,12 @@ static const CGFloat kDestSeemOverlap = 2.0f;   // the numbers of pixels to over
     if (![self shouldDecodeImage:image]) {
         return image;
     }
-    
-    if (![self shouldScaleDownImage:image limitBytes:bytes]) {
-        return [self decodedImageWithImage:image];
-    }
+  
+  NSLog(@"DOWNSCALE");
+  
+//  if (@available(iOS 15.0, *)) {
+//    UIImage *decodedImage = [image imageByPreparingThumbnailOfSize:image];
+//  }
     
     CGFloat destTotalPixels;
     CGFloat tileTotalPixels;
