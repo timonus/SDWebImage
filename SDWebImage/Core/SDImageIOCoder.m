@@ -12,6 +12,7 @@
 #import <ImageIO/ImageIO.h>
 #import "UIImage+Metadata.h"
 #import "SDImageIOAnimatedCoderInternal.h"
+#import "UIImage+ForceDecode.h"
 
 // Specify File Size for lossy format encoding, like JPEG
 static NSString * kSDCGImageDestinationRequestedFileSize = @"kCGImageDestinationRequestedFileSize";
@@ -83,15 +84,38 @@ static NSString * kSDCGImageDestinationRequestedFileSize = @"kCGImageDestination
         preserveAspectRatio = preserveAspectRatioValue.boolValue;
     }
     
-    // TODO: USE NEW IMAGE THUMBNAILING APIS HERE!!
+    UIImage *image;
     
-    CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
-    if (!source) {
-        return nil;
+    // If we can, use the new decoding APIs
+    if (preserveAspectRatio) {
+        if (@available(iOS 15.0, *)) {
+            UIImage *const sourceImage = [UIImage imageWithData:data];
+            if (scale == sourceImage.scale) {
+                if (thumbnailSize.width > 0 &&
+                    thumbnailSize.height > 0 &&
+                    (thumbnailSize.width < sourceImage.size.width ||
+                     thumbnailSize.height < sourceImage.size.height)) {
+                    image = [sourceImage imageByPreparingThumbnailOfSize:thumbnailSize];
+                } else {
+                    image = [sourceImage imageByPreparingForDisplay];
+                }
+            }
+            NSAssert(image, @"Uh oh");
+            image.sd_isDecoded = YES;
+        }
     }
     
-    UIImage *image = [SDImageIOAnimatedCoder createFrameAtIndex:0 source:source scale:scale preserveAspectRatio:preserveAspectRatio thumbnailSize:thumbnailSize options:nil];
-    CFRelease(source);
+    // Otherwise fall back
+    if (!image) {
+        CGImageSourceRef source = CGImageSourceCreateWithData((__bridge CFDataRef)data, NULL);
+        if (!source) {
+            return nil;
+        }
+        
+        image = [SDImageIOAnimatedCoder createFrameAtIndex:0 source:source scale:scale preserveAspectRatio:preserveAspectRatio thumbnailSize:thumbnailSize options:nil];
+        CFRelease(source);
+    }
+    
     if (!image) {
         return nil;
     }
